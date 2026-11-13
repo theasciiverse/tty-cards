@@ -108,6 +108,14 @@ func NewManager(ctx context.Context, matchRepo db.MatchRepository, games *game.R
 	}
 }
 
+// SetEngineOptions appends opts to every engine a start builds from now on: how a
+// table played on one machine turns the turn clock off for its computer seats' human.
+func (m *Manager) SetEngineOptions(opts ...game.EngineOption) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.engineOpts = append(m.engineOpts, opts...)
+}
+
 // generateLobbyCodeLocked is a fresh code no open lobby holds. Caller holds m.mu.
 // rand.Text is base32 (A-Z, 2-7), a subset of what lobbyCodePattern accepts, and
 // it has no 0 or 1, so an O or I in a code is always the letter. Eight characters
