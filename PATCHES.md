@@ -72,6 +72,7 @@ local games reuse them.
   then builds each game for Linux (static), macOS and Windows, x86-64 and
   ARM64, as `<id>-<target>` archives, plus SHA256SUMS and a .deb, .rpm, .apk
   and Arch package per game (`asciiverse/nfpm.yaml`, filled in per game).
-- `.github/workflows/vuln.yml` removed here: its weekly scan is upstream's.
+- `.github/workflows/vuln.yml` and `.github/dependabot.yml` removed here: the
+  weekly scan and the dependency updates are upstream's.
 - `asciiverse/record-preview.sh` and the five `asciiverse/<id>.cast` previews.
 - An Asciiverse note at the top of README.md.
