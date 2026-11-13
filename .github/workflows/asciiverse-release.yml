@@ -1,0 +1,106 @@
+# tty.cards for Asciiverse: release (tag v*-av.* or run by hand with a tag)
+#
+# Builds the five games of the collection as separate titles for the
+# Asciiverse catalog (hub/catalog/SCHEMA.md, "Collections"): one archive per
+# game and target, named <id>-<target>.tar.gz (Linux, macOS) or .zip
+# (Windows), plus SHA256SUMS, attached to one GitHub release; and a .deb,
+# .rpm, .apk and Arch package per game from the same Linux binaries
+# (asciiverse/nfpm.yaml).
+#
+# Each game is its own command (cmd/<id>), the server's tables, views and
+# rules played on one machine against computer players (internal/local).
+# Pure Go with CGO off, so every target cross-compiles on one Linux runner.
+#
+# Upstream has no tags: ours are v<date of the upstream commit>-av.N.
+
+name: asciiverse-release
+
+on:
+  push:
+    tags: ["v*-av.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "existing tag to build and release"
+        required: true
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Test the computer players
+        run: go test ./internal/local/ ./internal/game/...
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          build() { # id goos goarch target-triple
+            out="stage-$1-$4"; mkdir -p "$out"
+            exe="$1"; [ "$2" = windows ] && exe="$1.exe"
+            CGO_ENABLED=0 GOOS=$2 GOARCH=$3 go build -trimpath -ldflags "-s -w" -o "$out/$exe" "./cmd/$1"
+            cp LICENSE README.md PATCHES.md "$out/"
+            if [ "$2" = windows ]; then (cd "$out" && zip -q -r "../dist/$1-$4.zip" .)
+            else tar -czf "dist/$1-$4.tar.gz" -C "$out" .; fi
+          }
+          for id in crazy-eights holdem colour-clash hearts gin-rummy; do
+            build $id linux   amd64 x86_64-unknown-linux-musl
+            build $id linux   arm64 aarch64-unknown-linux-musl
+            build $id darwin  amd64 x86_64-apple-darwin
+            build $id darwin  arm64 aarch64-apple-darwin
+            build $id windows amd64 x86_64-pc-windows-msvc
+            build $id windows arm64 aarch64-pc-windows-msvc
+          done
+          ls -l dist
+
+      - name: System packages
+        run: |
+          v="${TAG#v}"; export VERSION="${v%%-av.*}" RELEASE="${v##*-av.}"
+          summary() {
+            case $1 in
+              crazy-eights) echo "Crazy Eights: match the suit or the rank; an eight is wild." ;;
+              holdem)       echo "Hold'em: no-limit Texas Hold'em, a ten-hand match." ;;
+              colour-clash) echo "Colour Clash: match colour, number or symbol; wilds name the colour." ;;
+              hearts)       echo "Hearts: pass three, follow suit, dodge the hearts and the queen." ;;
+              gin-rummy)    echo "Gin Rummy: draw, meld, discard, knock or go gin." ;;
+            esac
+          }
+          for id in crazy-eights holdem colour-clash hearts gin-rummy; do
+            sed -e "s|@NAME@|$id|g" -e "s|@SUMMARY@|$(summary "$id")|g" asciiverse/nfpm.yaml > "nfpm-$id.yaml"
+            for pair in amd64:x86_64 arm64:aarch64; do
+              export ARCH="${pair%%:*}"
+              rm -rf stage && cp -r "stage-$id-${pair##*:}-unknown-linux-musl" stage
+              for p in deb rpm apk archlinux; do
+                docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/src -w /src \
+                  -e VERSION -e RELEASE -e ARCH goreleaser/nfpm:v2.43.0 \
+                  package --config "nfpm-$id.yaml" --packager "$p" --target dist/
+              done
+            done
+          done
+          ls -l dist
+
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS && cat SHA256SUMS
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" -R "$GITHUB_REPOSITORY" --title "tty.cards $TAG" \
+                 --notes "Crazy Eights, Hold'em, Colour Clash, Hearts and Gin Rummy from github.com/Pieczasz/tty-cards, played on one machine against computer players, built for the Asciiverse catalog, with .deb, .rpm, .apk and Arch packages. Changes from upstream: see PATCHES.md."
+          gh release upload "$TAG" dist/* -R "$GITHUB_REPOSITORY" --clobber

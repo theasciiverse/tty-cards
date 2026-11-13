@@ -1,5 +1,11 @@
 # tty.cards
 
+> **In Asciiverse:** five of these games are titles of their own, played on one
+> machine against computer players, with no server or account: `av install
+> crazy-eights` (also `holdem`, `colour-clash`, `hearts`, `gin-rummy`), then start
+> it from av. `--players N` sets the table size and `--demo` lets the computer
+> play your seat too. Changes from upstream are in [PATCHES.md](PATCHES.md).
+
 [![Go Version](https://img.shields.io/github/go-mod/go-version/Pieczasz/tty-cards)](https://go.dev/)
 [![License](https://img.shields.io/github/license/Pieczasz/tty-cards)](./LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/Pieczasz/tty-cards/test.yml?branch=main)](https://github.com/Pieczasz/tty-cards/actions)
