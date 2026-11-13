@@ -86,3 +86,7 @@ local games reuse them.
   with a heart shifted one column and the card frames broke apart (seen in
   the website previews, 2026-11-13). U+2665 already defaults to text
   presentation. Written to go upstream.
+- **Hearts trick centred** (`internal/tui/views/gameview/hearts/view.go`): the
+  gap between the left and right cards of the trick cross is three cells, not
+  two. Cards are odd-width, so with an even gap the top and bottom cards sat
+  half a cell right of centre. Written to go upstream.

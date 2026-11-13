@@ -129,7 +129,9 @@ func (m *model) renderTrickArea(height int) string {
 	right := m.renderTrickSlot(m.opponentID(seatRight), mini)
 	return styles.JoinVertical(lg.Center,
 		top,
-		styles.JoinHorizontal(lg.Center, left, "  ", right),
+		// An odd gap: cards are odd-width, so the row is odd too and the top
+		// and bottom cards centre exactly instead of half a cell to the right.
+		styles.JoinHorizontal(lg.Center, left, "   ", right),
 		hero,
 	)
 }
