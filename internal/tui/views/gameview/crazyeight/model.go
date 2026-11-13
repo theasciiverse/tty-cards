@@ -22,7 +22,7 @@ var suitPicker = gameview.ChoicePicker{
 	Title: "Pick a suit:",
 	Choices: []gameview.Choice{
 		{Label: "♠ Spades", Suit: deck.Spades},
-		{Label: "♥︎ Hearts", Suit: deck.Hearts},
+		{Label: "♥ Hearts", Suit: deck.Hearts},
 		{Label: "♦ Diamonds", Suit: deck.Diamonds},
 		{Label: "♣ Clubs", Suit: deck.Clubs},
 	},

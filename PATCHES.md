@@ -76,3 +76,13 @@ local games reuse them.
   weekly scan and the dependency updates are upstream's.
 - `asciiverse/record-preview.sh` and the five `asciiverse/<id>.cast` previews.
 - An Asciiverse note at the top of README.md.
+
+## Fixes after the first release
+
+- **Hearts drawn as a plain U+2665** (`internal/tui/components/card.go`,
+  the Crazy Eights suit picker), like the other three suits. Upstream added
+  a U+FE0E text-presentation selector after it; xterm.js and
+  asciinema-player count that selector as a cell of its own, so every row
+  with a heart shifted one column and the card frames broke apart (seen in
+  the website previews, 2026-11-13). U+2665 already defaults to text
+  presentation. Written to go upstream.

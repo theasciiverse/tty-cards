@@ -244,9 +244,10 @@ func blankRow() []string {
 func suitStyle(t *styles.Theme, suit deck.Suit) (string, lg.Style) {
 	switch suit {
 	case deck.Hearts:
-		// The text-presentation selector keeps the heart one column wide; without it
-		// some terminals draw it as a double-width emoji and the whole grid shifts.
-		return "♥\ufe0e", lg.NewStyle().Foreground(t.SuitRed)
+		// Plain U+2665, like the other suits: its default presentation is text,
+		// one column wide. A U+FE0E selector after it is counted as a cell of its
+		// own by some renderers (xterm.js, asciinema-player), shifting the grid.
+		return "♥", lg.NewStyle().Foreground(t.SuitRed)
 	case deck.Diamonds:
 		return "♦", lg.NewStyle().Foreground(t.SuitRed)
 	case deck.Clubs:
