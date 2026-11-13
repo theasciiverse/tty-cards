@@ -29,7 +29,8 @@ type session struct {
 }
 
 func newSession(inner tea.Model, t *Table) *session {
-	return &session{Model: inner, table: t, idleSince: time.Now()}
+	// The first deal comes two seconds in, not five: a preview shows play early.
+	return &session{Model: inner, table: t, idleSince: time.Now().Add(-3 * time.Second)}
 }
 
 func snapshotTick() tea.Cmd {

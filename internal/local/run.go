@@ -123,6 +123,11 @@ func findEntry(slug string) (catalog.Entry, bool) {
 // capitalised, else "You".
 func playerName(flagName string) string {
 	n := strings.TrimSpace(flagName)
+	for _, v := range []string{"USER", "USERNAME"} {
+		if n == "" {
+			n = strings.TrimSpace(os.Getenv(v))
+		}
+	}
 	if n == "" {
 		if u, err := user.Current(); err == nil {
 			n = u.Username
